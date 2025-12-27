@@ -18,6 +18,11 @@
             padding: 20px;
         }
 
+        /* Temporary test message to verify if the page is loading */
+        h1 {
+            color: white;
+        }
+
         .station-list {
             display: flex;
             flex-direction: column;
@@ -36,7 +41,7 @@
         }
 
         .station-name {
-            font-size: 4rem;
+            font-size: 3rem;
             margin-bottom: 10px;
         }
 
@@ -70,6 +75,9 @@
     </style>
 </head>
 <body>
+
+<!-- Test message to verify content rendering -->
+<h1>Website is loading correctly!</h1>
 
 <div class="station-list" id="stationList">
     <!-- Dynamically populated stations -->
@@ -123,4 +131,79 @@
             if (mins <= 1) {
                 announcement = `Attention passengers: The next train to ${station.name} is now approaching. Please stand back from the platform edge.`;
                 statusMessage = `Train to ${station.name} is now boarding!`;
-            } else
+            } else if (mins <= 5) {
+                statusMessage = `Train approaching with new Red Line cars!`;
+            } else {
+                statusMessage = "Waiting for the next train.";
+            }
+
+            document.getElementById(`${station.id}-status`).textContent = statusMessage;
+            document.getElementById(`${station.id}-announcement`).textContent = announcement;
+
+        } catch (error) {
+            console.error("Error fetching data for station:", station.name, error);
+        }
+    }
+
+    function createStationElements(station) {
+        const stationContainer = document.createElement("div");
+        stationContainer.classList.add("station-container");
+        stationContainer.id = `${station.id}-container`;
+
+        const stationName = document.createElement("div");
+        stationName.classList.add("station-name");
+        stationName.textContent = station.name;
+
+        const trainInfo = document.createElement("div");
+        trainInfo.classList.add("train-info");
+
+        const leftSection = document.createElement("div");
+        leftSection.classList.add("left-section");
+        const countdown = document.createElement("div");
+        countdown.classList.add("countdown");
+        countdown.id = `${station.id}-countdown`;
+        countdown.textContent = "-- min";
+
+        leftSection.appendChild(countdown);
+
+        const rightSection = document.createElement("div");
+        rightSection.classList.add("right-section");
+        const status = document.createElement("div");
+        status.classList.add("status");
+        status.id = `${station.id}-status`;
+        status.textContent = "Loading...";
+
+        const announcement = document.createElement("div");
+        announcement.classList.add("status");
+        announcement.id = `${station.id}-announcement`;
+        announcement.textContent = "";
+
+        rightSection.appendChild(status);
+        rightSection.appendChild(announcement);
+
+        trainInfo.appendChild(leftSection);
+        trainInfo.appendChild(rightSection);
+
+        stationContainer.appendChild(stationName);
+        stationContainer.appendChild(trainInfo);
+
+        document.getElementById("stationList").appendChild(stationContainer);
+
+        // Fetch data for the station
+        fetchDataForStation(station);
+    }
+
+    stations.forEach(station => {
+        createStationElements(station);
+    });
+
+    setInterval(updateTime, 1000);  // Update time every second
+
+    function updateTime() {
+        const timeDisplay = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById("currentTime").textContent = timeDisplay;
+    }
+</script>
+
+</body>
+</html>
