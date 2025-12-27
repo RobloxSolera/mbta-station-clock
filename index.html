@@ -62,6 +62,12 @@
             `https://api-v3.mbta.com/predictions?filter[stop]=${stopId}&filter[route]=${route}`
         );
         const data = await res.json();
+        
+        if (data.data.length === 0) {
+            console.error("No data returned from MBTA API.");
+            return;
+        }
+
         const now = new Date().getTime();
 
         // Find next arrival time
@@ -79,18 +85,30 @@
         const next = times[0];
         const mins = Math.round((next - now) / 60000);
 
+        // Log data to check if everything is correct
+        console.log("Next train in minutes:", mins);
+
+        // Update station and countdown
         document.getElementById("station").textContent = "Alewife"; // Customize destination if needed
         document.getElementById("countdown").textContent = `${mins} min`;
 
         let status = "";
+        let announcement = "";
+
+        // Custom announcement when the train is approaching
         if (mins <= 1) {
-            status = `Train to Alewife is now boarding! Please stand back from the platform edge.`;
+            announcement = `Attention passengers: The next train to Alewife is now approaching. Please stand back from the platform edge.`;
+            status = "Train to Alewife is now boarding!";
         } else if (mins <= 5) {
             status = `Train approaching with new Red Line cars!`;
         } else {
             status = "Waiting for the next train.";
         }
+
         document.getElementById("status").textContent = status;
+
+        // Show the custom announcement
+        document.getElementById("announcement").textContent = announcement;
 
         updateTime();
     }
@@ -106,3 +124,4 @@
 
 </body>
 </html>
+
