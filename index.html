@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTA Station Clock</title>
+    <title>MBTA Red Line Station Clock</title>
     <style>
         body {
             background-color: black;
@@ -12,34 +12,30 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
             margin: 0;
-            padding: 20px;
-            text-align: center;
         }
 
-        .station-container {
+        .clock-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 80%;
             text-align: center;
-            border: 2px solid orange;
-            padding: 20px;
-            background-color: #333;
-            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .station-name {
             font-size: 6rem;
-            width: 40%;
+            width: 45%;
             margin-right: 20px;
         }
 
         .train-info {
             font-size: 6rem;
             font-weight: bold;
-            width: 40%;
+            width: 45%;
         }
 
         .status {
@@ -48,48 +44,60 @@
             margin-top: 10px;
         }
 
-        .time {
+        .current-time {
             font-size: 2rem;
             color: white;
             margin-top: 20px;
         }
 
         .announcement {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: yellow;
-            margin-top: 20px;
             font-weight: normal;
+            margin-top: 10px;
+        }
+
+        .train-info-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .train-info-container > div {
+            width: 45%;
         }
     </style>
 </head>
 <body>
 
-<div class="station-container">
-    <!-- Station Name and Countdown -->
+<div class="clock-container">
+    <!-- Station Name on the left and Train Countdown + Status on the right -->
     <div class="station-name" id="stationName">Alewife</div>
-    <div class="train-info">
-        <div id="countdown">4 min</div>
-        <div id="status" class="status">Stopped</div>
+    <div class="train-info-container">
+        <div class="train-info">
+            <div id="countdown">4 min</div>
+            <div id="status" class="status">Stopped</div>
+        </div>
     </div>
 </div>
 
 <!-- Current time display -->
-<div id="currentTime" class="time">9:18</div>
+<div id="currentTime" class="current-time">9:18</div>
 
 <!-- Announcement section -->
-<div id="announcement" class="announcement">Attention passengers: The next train to Alewife is now approaching. Please stand back from the platform edge.</div>
+<div id="announcement" class="announcement">
+    Attention passengers: The next train to Alewife is now approaching. Please stand back from the platform edge.
+</div>
 
 <script>
     // Station info
-    const stationName = "Alewife";
+    const stationName = "Alewife"; // Example station
     const countdownTime = 4; // Example: 4 minutes
+    const status = "Stopped"; // Example status
 
     // Set station name and countdown time
     document.getElementById("stationName").textContent = stationName;
     document.getElementById("countdown").textContent = `${countdownTime} min`;
-
-    // Train status
-    const status = "Stopped"; // Example status
     document.getElementById("status").textContent = status;
 
     // Announcement when the train is approaching
