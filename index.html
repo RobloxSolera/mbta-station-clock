@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MBTA Red Line Station Clock</title>
+<style>
+  body {
+    background: black;
+    color: orange;
+    font-family: "Courier New", monospace;
+    text-align: center;
+    padding-top: 15vh;
+  }
+  #station { font-size: 4rem; }
+  #countdown { font-size: 6rem; font-weight: bold; }
+  #status { font-size: 2rem; margin-top: 8px; }
+  #currentTime { font-size: 1.5rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<div id="station">Loading station...</div>
+<div id="countdown">-- min</div>
+<div id="status"></div>
+<div id="currentTime"></div>
+
+<script>
+const stopId = "place-alfcl";  // Alewife
+const route = "Red";
+
+async function fetchData() {
+  const res = await fetch(
+    `https://api-v3.mbta.com/predictions?filter[stop]=${stopId}&filter[route]=${route}`
+  );
+  const data = await res.json();
+  const now = new Date().getTime();
+
+  // find next arrival time
+  const times = data.data
+    .map(t => new Date(t.attributes.arrival_time).getTime())
+    .filter(t => t > now)
+    .sort();
+
+  if (times.length === 0) {
+    document.getElementById("countdown").textContent = "No trains";
+    document.getElementById("status").textContent = "";
+    return;
+  }
+
+  const next = times[0];
+  const mins = Math.round((next - now) / 60000);
+
+  document.getElementById("station").textContent = "Alewife"; 
+  document.getElementById("countdown").textContent = `${mins} min`;
+
+  let status = "";
+  if (mins <= 1) {
+    status = `Train to Alewife is now boarding!\nPlease stand back from the platform edge.`;
+  } else if (mins <= 5) {
+    status = `Train approaching with new Red Line cars!`;
+  } else {
+    status = "";
+  }
+  document.getElementById("status").textContent = status;
+
+  updateTime();
+}
+
+function updateTime() {
+  document.getElementById("currentTime").textContent =
+    new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+fetchData();
+setInterval(fetchData, 30000); // update every 30s
+setInterval(updateTime, 1000); // real clock
+</script>
+
+</body>
+</html>
