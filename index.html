@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBTA Red Line Station Clock</title>
+    <title>MBTA Station Clock</title>
     <style>
         body {
             background-color: black;
@@ -12,197 +12,97 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
             height: 100vh;
             margin: 0;
             padding: 20px;
-        }
-
-        /* Temporary test message to verify if the page is loading */
-        h1 {
-            color: white;
-        }
-
-        .station-list {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            align-items: center;
             text-align: center;
         }
 
         .station-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             width: 80%;
-            margin: 20px 0;
-            padding: 10px;
+            text-align: center;
             border: 2px solid orange;
-            border-radius: 10px;
+            padding: 20px;
             background-color: #333;
+            border-radius: 10px;
         }
 
         .station-name {
-            font-size: 3rem;
-            margin-bottom: 10px;
+            font-size: 6rem;
+            width: 40%;
+            margin-right: 20px;
         }
 
-        .countdown {
+        .train-info {
             font-size: 6rem;
             font-weight: bold;
+            width: 40%;
         }
 
         .status {
             font-size: 2rem;
-            margin-top: 10px;
             color: yellow;
+            margin-top: 10px;
         }
 
         .time {
             font-size: 2rem;
             color: white;
+            margin-top: 20px;
         }
 
-        .train-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            text-align: center;
-        }
-
-        .left-section, .right-section {
-            width: 45%;
-            display: inline-block;
+        .announcement {
+            font-size: 1.8rem;
+            color: yellow;
+            margin-top: 20px;
+            font-weight: normal;
         }
     </style>
 </head>
 <body>
 
-<!-- Test message to verify content rendering -->
-<h1>Website is loading correctly!</h1>
-
-<div class="station-list" id="stationList">
-    <!-- Dynamically populated stations -->
+<div class="station-container">
+    <!-- Station Name and Countdown -->
+    <div class="station-name" id="stationName">Alewife</div>
+    <div class="train-info">
+        <div id="countdown">4 min</div>
+        <div id="status" class="status">Stopped</div>
+    </div>
 </div>
 
+<!-- Current time display -->
+<div id="currentTime" class="time">9:18</div>
+
+<!-- Announcement section -->
+<div id="announcement" class="announcement">Attention passengers: The next train to Alewife is now approaching. Please stand back from the platform edge.</div>
+
 <script>
-    const stations = [
-        { id: "place-alfcl", name: "Alewife" },
-        { id: "place-ashmt", name: "Ashmont" },
-        { id: "place-brntn", name: "Braintree" },
-        { id: "place-davis", name: "Davis" },
-        { id: "place-kencl", name: "Kendall/MIT" },
-        { id: "place-port", name: "Porter" },
-        { id: "place-alev", name: "Alewife" },
-        // Add more Red Line stations as needed
-    ];
+    // Station info
+    const stationName = "Alewife";
+    const countdownTime = 4; // Example: 4 minutes
 
-    async function fetchDataForStation(station) {
-        try {
-            const res = await fetch(
-                `https://api-v3.mbta.com/predictions?filter[stop]=${station.id}&filter[route]=Red`
-            );
-            const data = await res.json();
+    // Set station name and countdown time
+    document.getElementById("stationName").textContent = stationName;
+    document.getElementById("countdown").textContent = `${countdownTime} min`;
 
-            if (!data.data || data.data.length === 0) {
-                document.getElementById(`${station.id}-countdown`).textContent = "No trains";
-                document.getElementById(`${station.id}-status`).textContent = "No upcoming trains.";
-                return;
-            }
+    // Train status
+    const status = "Stopped"; // Example status
+    document.getElementById("status").textContent = status;
 
-            const now = new Date().getTime();
-            const times = data.data
-                .map(t => new Date(t.attributes.arrival_time).getTime())
-                .filter(t => t > now)
-                .sort();
+    // Announcement when the train is approaching
+    const announcementText = `Attention passengers: The next train to ${stationName} is now approaching. Please stand back from the platform edge.`;
+    document.getElementById("announcement").textContent = announcementText;
 
-            if (times.length === 0) {
-                document.getElementById(`${station.id}-countdown`).textContent = "No trains";
-                document.getElementById(`${station.id}-status`).textContent = "";
-                return;
-            }
-
-            const next = times[0];
-            const mins = Math.round((next - now) / 60000);
-
-            document.getElementById(`${station.id}-countdown`).textContent = `${mins} min`;
-
-            let statusMessage = "";
-            let announcement = "";
-
-            if (mins <= 1) {
-                announcement = `Attention passengers: The next train to ${station.name} is now approaching. Please stand back from the platform edge.`;
-                statusMessage = `Train to ${station.name} is now boarding!`;
-            } else if (mins <= 5) {
-                statusMessage = `Train approaching with new Red Line cars!`;
-            } else {
-                statusMessage = "Waiting for the next train.";
-            }
-
-            document.getElementById(`${station.id}-status`).textContent = statusMessage;
-            document.getElementById(`${station.id}-announcement`).textContent = announcement;
-
-        } catch (error) {
-            console.error("Error fetching data for station:", station.name, error);
-        }
-    }
-
-    function createStationElements(station) {
-        const stationContainer = document.createElement("div");
-        stationContainer.classList.add("station-container");
-        stationContainer.id = `${station.id}-container`;
-
-        const stationName = document.createElement("div");
-        stationName.classList.add("station-name");
-        stationName.textContent = station.name;
-
-        const trainInfo = document.createElement("div");
-        trainInfo.classList.add("train-info");
-
-        const leftSection = document.createElement("div");
-        leftSection.classList.add("left-section");
-        const countdown = document.createElement("div");
-        countdown.classList.add("countdown");
-        countdown.id = `${station.id}-countdown`;
-        countdown.textContent = "-- min";
-
-        leftSection.appendChild(countdown);
-
-        const rightSection = document.createElement("div");
-        rightSection.classList.add("right-section");
-        const status = document.createElement("div");
-        status.classList.add("status");
-        status.id = `${station.id}-status`;
-        status.textContent = "Loading...";
-
-        const announcement = document.createElement("div");
-        announcement.classList.add("status");
-        announcement.id = `${station.id}-announcement`;
-        announcement.textContent = "";
-
-        rightSection.appendChild(status);
-        rightSection.appendChild(announcement);
-
-        trainInfo.appendChild(leftSection);
-        trainInfo.appendChild(rightSection);
-
-        stationContainer.appendChild(stationName);
-        stationContainer.appendChild(trainInfo);
-
-        document.getElementById("stationList").appendChild(stationContainer);
-
-        // Fetch data for the station
-        fetchDataForStation(station);
-    }
-
-    stations.forEach(station => {
-        createStationElements(station);
-    });
-
-    setInterval(updateTime, 1000);  // Update time every second
-
+    // Update current time every second
     function updateTime() {
-        const timeDisplay = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        document.getElementById("currentTime").textContent = timeDisplay;
+        document.getElementById("currentTime").textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
+
+    // Update time every second
+    setInterval(updateTime, 1000);
 </script>
 
 </body>
