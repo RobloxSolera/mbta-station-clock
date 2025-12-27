@@ -36,19 +36,91 @@
         }
 
         .station-name {
-            font-size: 3rem;
+            font-size: 4rem;
             margin-bottom: 10px;
         }
 
         .countdown {
-            font-size: 4rem;
+            font-size: 6rem;
             font-weight: bold;
         }
 
         .status {
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin-top: 10px;
             color: yellow;
         }
 
         .time {
+            font-size: 2rem;
+            color: white;
+        }
+
+        .train-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            text-align: center;
+        }
+
+        .left-section, .right-section {
+            width: 45%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="station-list" id="stationList">
+    <!-- Dynamically populated stations -->
+</div>
+
+<script>
+    const stations = [
+        { id: "place-alfcl", name: "Alewife" },
+        { id: "place-ashmt", name: "Ashmont" },
+        { id: "place-brntn", name: "Braintree" },
+        { id: "place-davis", name: "Davis" },
+        { id: "place-kencl", name: "Kendall/MIT" },
+        { id: "place-port", name: "Porter" },
+        { id: "place-alev", name: "Alewife" },
+        // Add more Red Line stations as needed
+    ];
+
+    async function fetchDataForStation(station) {
+        try {
+            const res = await fetch(
+                `https://api-v3.mbta.com/predictions?filter[stop]=${station.id}&filter[route]=Red`
+            );
+            const data = await res.json();
+
+            if (!data.data || data.data.length === 0) {
+                document.getElementById(`${station.id}-countdown`).textContent = "No trains";
+                document.getElementById(`${station.id}-status`).textContent = "No upcoming trains.";
+                return;
+            }
+
+            const now = new Date().getTime();
+            const times = data.data
+                .map(t => new Date(t.attributes.arrival_time).getTime())
+                .filter(t => t > now)
+                .sort();
+
+            if (times.length === 0) {
+                document.getElementById(`${station.id}-countdown`).textContent = "No trains";
+                document.getElementById(`${station.id}-status`).textContent = "";
+                return;
+            }
+
+            const next = times[0];
+            const mins = Math.round((next - now) / 60000);
+
+            document.getElementById(`${station.id}-countdown`).textContent = `${mins} min`;
+
+            let statusMessage = "";
+            let announcement = "";
+
+            if (mins <= 1) {
+                announcement = `Attention passengers: The next train to ${station.name} is now approaching. Please stand back from the platform edge.`;
+                statusMessage = `Train to ${station.name} is now boarding!`;
+            } else
